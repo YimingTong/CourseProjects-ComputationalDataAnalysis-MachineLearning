@@ -1,0 +1,85 @@
+%XeLaTeX
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{ISYE/CSE 6740 Homework 2}
+\author{Yiming Tong}
+
+
+\begin{document}
+\maketitle
+\section{Q2}
+It's obvious that $f_v(x)=(x^Tv)v$. Hence, the target function becomes
+\begin{gather*}
+\mathop{argmin}\limits_{||v||}\sum_{i=1}^n||x_i-(x_i^Tv)v||^2\\
+=\mathop{argmin}\limits_{||v||}\sum_{i=1}^n(x_i^Tx_i-2(x_i^Tv)^2+(x_i^Tv)^2v^Tv)\\
+=\mathop{argmin}\limits_{||v||}\sum_{i=1}^n(x_i^Tx_i-(x_i^Tv)^2)\\
+=\mathop{argmin}\limits_{||v||}(\Sigma-v\Sigma v^T)
+\end{gather*}
+which is constraint by $v^Tv=1$, where $\Sigma=\sum_{i=1}^nx_i^Tx_i$ is the covariance matrix of the components of the data set $X$. This is exactly the same optimization problem as in PCA, since the first term $\Sigma$ is independent with argument $v$. Thus, $\mathop{argmin}\limits_{||v||}\sum_{i=1}^n||x_i-(x_i^Tv)v||^2$ gives the principle component.
+\section{Q4}
+(a)$\mathcal{L}(\Delta_i, h_i)=log\prod_{i=1}^m(\frac{h_i\Delta_i}{\Sigma_ih_i\Delta_i})^{n_i}$.\\
+(b)Added Lagrange multiplier, the target function is obained as:
+\begin{align*}
+L(h_i, \lambda)=&log\prod_{i=1}^m(h_i\Delta_i)^{n_i}+\lambda(1-\sum_i\Delta_ih_i)\\
+=&\Sigma_in_ilog(\Delta_ih_i)-\lambda\sum_i\Delta_ih_i+\lambda.
+\end{align*}
+Taking $\frac{\partial L}{\partial h_i}$ gives $\frac{n_i}{h_i}-\lambda\Delta_i=0, h_i=\frac{n_i}{\lambda\Delta_i}.$ Then we can determine $\lambda$ by normalizing the probability: $\sum_i\Delta_ih_i=\sum_in_i/\lambda=1, \lambda = \sum_in_i=N$. \\
+In summary, the maximum log likehood esitimator $h_i = \frac{n_i}{N\Delta_i}$.\\
+(c)
+\begin{itemize}
+\item F: More like have many parameters. The number of parameters $\sim$ number of samples.
+\item F: Too many bins in high dimensional cases; Full bandwidth induces higher statistical risk. 
+\item T: The shape follows the model you choose, e.g. guassian.
+\end{itemize}
+\section{Q5}
+(a) For given $z^{(k)}$, only the $k^{th}$ term in the product exists, i.e.
+\begin{align*}
+p(z=z^{(k)})&=\pi_k,\\
+p(x|z=z^{(k)})&=\mathcal{N}(x|\mu_k, \Sigma_k).
+\end{align*}
+Thus, 
+\begin{align*}
+(2)&=\sum_{z\in Z}p(z)p(x|z)\\
+&=\sum_kp(z^{(k)})p(x|z^{(k)})\\
+&=\sum_{k=1}^{K}\pi_k\mathcal{N}(x|\mu_k, \Sigma_k)=(1).
+\end{align*}
+(b)
+\begin{align*}
+p(z_k^n=1|x_n)=&\frac{p(z^k_n=1)p(x_n|z_k^n=1)}{p(x_n)}\\
+=&\frac{\pi_k\times\mathcal{N}(x_i|\mu_k, \Sigma_k)}{\sum_kp(z^k_n=1)p(x_n|z_k^n=1)}\\
+=&\frac{\pi_k\mathcal{N}(x_i|\mu_k, \Sigma_k)}{\sum_k\pi_k\mathcal{N}(x_i|\mu_k, \Sigma_k)},
+\end{align*}
+where $\mathcal{N}\left(x_i | \mu_{k}, \Sigma_{k}\right) :=\frac{1}{|\Sigma|^{\frac{1}{2}}(2 \pi)^{\frac{d}{2}}} \exp \left(-\frac{1}{2}(x_i-\mu)^T \Sigma^{-1}(x_i-\mu)\right)$.\\
+(c) In M-step we maximize the following target function, which is the log-likehood function of sum of $K$ normal distributions:
+$$f(\pi_k, \Sigma_k, \mu_k)=\sum_{i=1}^{m} \sum_{k=1}^{K} \tau_{k}^{i}\left[\log \pi_{k}-\left(x^{i}-\mu_{k}\right)^{T} \Sigma_{k}\left(x^{i}-\mu_{k}\right)+\log \Sigma_{k}+c\right],$$
+which is constraint by $\Sigma\pi_k=1$. As usual we add Lagrange mutiplexer, the target function becomes:
+$$L(\pi_k, \Sigma_k, \mu_k, \lambda)=\sum_{i=1}^{m} \sum_{k=1}^{K} \tau_{k}^{i}\left[\log \pi_{k}-\left(x^{i}-\mu_{k}\right)^{T} \Sigma_{k}\left(x^{i}-\mu_{k}\right)+\log \Sigma_{k}+c\right]-\lambda(1-\sum\pi_k).$$
+By setting the partial derivative of $\pi_k, \Sigma_k, \mu_k$ and $\lambda$ to zero, we find out:
+\begin{center} 
+$\sum_i\frac{\tau_k^i}{\pi_k}-\lambda=0,$\\
+$\sum_i\tau_k^i\Sigma_k(x^i-\mu_k)=0,$\\
+$\sum_i\tau_k^i[(x^i-\mu_k)^T(x^i-\mu_k)+\Sigma_k^{-1}]=0,$\\
+$\sum_k\pi_k=0.$\\
+\end{center}
+By solving these equations, we could come to the updated $\pi_k, \mu_k$ and $\Sigma_k$:
+\begin{center}
+$\pi_k=\frac{\sum_i\tau_k^i}{m},$\\
+$\mu_k=\frac{\sum_i\tau_k^ix^i}{\sum_i\tau_k^i},$\\
+$\Sigma_k=\frac{\sum_i\tau_k^i(x^i-\mu_k)^T(x^i-\mu_k)}{\sum_i\tau_k^i}.$
+\end{center}
+(d) By substituting $\Sigma_k=\epsilon I$ into normal distribution we get
+$$\mathcal{N}(x^i,\mu_k,\Sigma_k=\epsilon I)=\frac{1}{\sqrt{2\pi\epsilon}}e^{-\frac{1}{2\epsilon}||x^i-\mu_k||^2}.$$
+Then the $\tau_k^i$ is given by
+$$\tau_k^i=\frac{\pi_kexp(-||x^i-\mu_k||^2/2\epsilon)}{\Sigma_k\pi_kexp(-||x^i-\mu_k||^2/2\epsilon)}\rightarrow\gamma_i^k,$$
+as $\epsilon\rightarrow0$, where $\gamma_{ik}=1$ if $x^i$ is closest to $\mu_k$ and $\gamma_{ik}=0$ otherwise. This is because as $\epsilon\rightarrow0$, only the term with the smallest $||x^i-\mu_k||^2$ is significant.
+In this case, the log likehood function becomes:
+$$f(\pi_k, \mu_k)=\sum_n\sum_k\gamma_{nk}(log(\pi_k)-\frac{1}{2\epsilon}||x^n-\mu_k||^2+log(\frac{1}{\sqrt{2\pi\epsilon}}))\rightarrow-\sum_n\sum_k\gamma_{nk}\frac{1}{2\epsilon}||x^n-\mu_k||^2,$$
+as $\epsilon\rightarrow 0$. To maximize $f(\pi_k, \mu_k)$ is equivalent to minimize $J=\sum_n \sum_k \gamma_{n k}\left\|x_{n}-\mu_{k}\right\|^{2}$ in this case.\\
+(e)
+\begin{align*}
+\mu_{mixture}=\sum_k\pi_k\mu_k\\
+\Sigma_{mixture}=\sum_k\pi_k\Sigma_k.
+\end{align*}
+\end{document}

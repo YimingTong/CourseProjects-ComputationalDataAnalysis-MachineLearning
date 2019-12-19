@@ -1,0 +1,150 @@
+\documentclass{article}
+\usepackage{amsmath}
+\newcommand{\dif}{\mathrm{d}}
+
+
+\title{CS 7641 CSE/ISYE 6740 Homework 3}
+\author{Tong Yiming}
+\date{}
+
+\begin{document}
+\maketitle
+% section 1
+\section{EM application}
+1.(a)\\
+Note that $x^{(pr)} = y^{(pr)} + z^{(pr)} + \epsilon^{(pr)}$, where $\epsilon^{(pr)}\sim\mathcal{N}(o, \sigma^2)$, and $y^{(pr)}$, $z^{(pr)}$ ,$\epsilon^{(pr)}$ are independent with each other. We could therefore obtains
+\begin{gather*}
+E(x^{(pr)}) = E(y^{(pr)} + z^{(pr)} + \epsilon^{(pr)}) = \mu_p + \nu_r,\\
+Cov(x^{(pr)}, y^{(pr)}) = Cov(y^{(pr)} + z^{(pr)} + \epsilon^{(pr)}, y^{(pr)}) = \sigma_p^2,\\
+Cov(x^{(pr)}, z^{(pr)}) = \tau_r^2,\\
+\sigma^2_{x^{(pr)}} = \sigma_p^2 + \tau_r^2 + \sigma^2.
+\end{gather*}
+Thus, the mean vector and covariance matrix read
+\begin{equation*}
+\mu=\left(
+\begin{matrix}
+\mu_p\\
+\nu_r\\
+\mu_p + \nu_r
+\end{matrix}
+\right),
+\Sigma=\left(
+\begin{matrix}
+\sigma_p^2& 0& \sigma_p^2\\
+0 & \tau_r^2& \tau_r^2\\
+\sigma_p^2& \tau_r^2& \sigma_p^2 + \tau_r^2 + \sigma^2
+\end{matrix}
+\right).
+\end{equation*}
+1.(b)\\
+The desired set of parameters to be estimated is $\theta = \{\mu_p, \sigma_p^2, \nu_r, \tau_r^2\}$.
+From the conditional distribution formula of jointly Gaussian distribution, we have 
+\begin{gather*}
+(y^{(pr)}, z^{(pr)})| x^{(pr)} \sim \mathcal{N}(\mu', \Sigma'), \text{where}\\
+\mu'=\frac{1}{\sigma_p^2 + \tau_r^2 + \sigma^2}\left(
+\begin{matrix}
+\mu_p(\tau_r^2 + \sigma^2) + \sigma_p^2(x^{(pr)} - \nu_r)\\
+\nu_r(\sigma_p^2 + \sigma^2) + \tau_r^2(x^{(pr)} - \mu_p)
+\end{matrix}
+\right),\\
+\Sigma'=\frac{1}{\sigma_p^2 + \tau_r^2 + \sigma^2}\left(
+\begin{matrix}
+\sigma_p^2(\tau_r^2 + \sigma^2)& -\sigma_p^2\tau_r^2\\
+-\sigma_p^2\tau_r^2 & \tau_r^2(\sigma_p^2 + \sigma^2)\\
+\end{matrix}
+\right).
+\end{gather*}
+Thus,
+\begin{gather*}
+Q^{(pr)}(\theta'|\theta) = \iint_{y^{(pr)}, z^{(pr)}}p(y^{(pr)}, z^{(pr)}|x^{(pr)};\theta)\mathrm{log}p(y^{(pr)}, z^{(pr)}, x^{(pr)}; \theta')\dif y^{(pr)}\dif z^{(pr)},
+\end{gather*}
+where 
+\begin{gather*}
+p(y^{(pr)}, z^{(pr)}|x^{(pr)})=\mathrm{PDF}(\mathcal{N}(y^{(pr)}, z^{(pr)}|x^{(pr)}))\\
+=\frac{1}{2\pi\sqrt{\det\Sigma'}}exp(-\frac{1}{2}(x-\mu')^T\Sigma'^{-1}(x-\mu')),\\
+p(y^{(pr)}, z^{(pr)}, x^{(pr)})=\frac{1}{2\pi\sqrt{\det\Sigma}}exp(-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)).
+\end{gather*}
+2.\\
+The optimization problem in M-step is 
+\begin{gather*}
+\theta_\text{new} = arg\max_{\theta'}\sum_{p,r}Q^{(pr)}(\theta'|\theta)\\
+=arg\max_{\theta'}\sum_{p,r}\iint_{y^{(pr)}, z^{(pr)}}p(y^{(pr)}, z^{(pr)}|x^{(pr)};\theta)\mathrm{log}p(y^{(pr)}, z^{(pr)}, x^{(pr)}; \theta')\dif y^{(pr)}\dif z^{(pr)}.	\\
+=arg\max_{\theta'}\sum_{p,r}\mathrm{E}[\mathrm{PDF}(\mathcal{N}(y^{(pr)}+z^{(pr)},\sigma))\cdot\mathrm{PDF}(\mathcal{N}(\mu_p,\sigma_p))\cdot\mathrm{PDF}(\mathcal{N}(\nu_r,\tau_r))]\\
+=arg\max_{\theta'}\sum_{p,r}\mathrm{E}[\log \frac{1}{\sigma_{p} \tau_{r}}-\frac{1}{2 \sigma_{p}^{2}}\left(y^{(p r)}-\mu_{p}\right)^{2}-\frac{1}{2 \tau_{r}^{2}}\left(z^{(p r)}-\nu_{r}\right)^{2}].
+\end{gather*}
+Here we could take the expectation of $y^{(pr)}$ and $z^{(pr)}$, which follows the conditional distribution we derived before
+\begin{align*}
+\mathrm{E}(y^{(pr)}) = \mu'_{1}, &\mathrm{E}(z^{(pr)}) = \mu'_{2},\\
+\mathrm{E}[(y^{(pr)})^2] = \mu'^2_{1}+\Sigma'_{11}, &\mathrm{E}[(z^{(pr)})^2] = \mu'^2_{2}+\Sigma'_{22},
+\end{align*}
+where the subscripts denote the position of an matrix of array element. Finally we come to an analytical form of the target function,
+\begin{equation*}
+\theta_\text{new} = arg\max_{\theta'}\sum_{p,r}\log \frac{1}{\sigma_{p} \tau_{r}}-\frac{1}{2 \sigma_{p}^{2}}\left(\Sigma'_{11}+\mu'^{2}_1-2 \mu'_1 \mu_{p}+\mu_{p}^{2}\right)-\frac{1}{2 \tau_{r}^{2}}\left(\Sigma'_{22}+\mu'^{2}_2-2 \mu'_2 \nu_{r}+\nu_{r}^{2}\right).
+\end{equation*}
+With some derivative taken, we have the updated parameters as 
+\begin{gather*}
+\mu_p=\frac{1}{R}\sum_r\mu'_1,\\
+\nu_r=\frac{1}{P}\sum_p\mu'_2,\\
+\sigma^2_p=\frac{1}{R}\sum_r\Sigma'_{11}+\mu'^2_1-2\mu_p\mu'^2_1+\mu_p^2,\\
+\tau^2_r=\frac{1}{P}\sum_p\Sigma'_{22}+\mu'^2_2-2\tau_r\mu'^2_2+\nu_r^2.
+\end{gather*}
+% section 2
+\section{Basic optimization}
+1.\\
+We first calculate the Hessian:
+\begin{align*}
+\nabla f &= \frac{\sum_i e^{x_i}\hat{i}}{\sum_i e^{x_i}},\\
+\nabla^2 f &= \nabla (\nabla f) = \nabla\frac{1}{\sum_i e^{x_i}} \sum_i e^{x_i}\hat{i} + \frac{1}{\sum_i e^{x_i}}\nabla^2\sum_i e^{x_i}\\
+&=-\frac{\sum_i e^{x_i}\hat{i}}{(\sum_i e^{x_i})^2} \sum_i e^{x_i}\hat{i} + \frac{1}{\sum_i e^{x_i}}\sum_ie^{x_i}\hat{i}\hat{i}\\
+&=\frac{1}{(\sum_i e^{x_i})^2}\sum_{i,j}(\delta_{i,j}e^{x_i}\sum_i e^{x_i}-e^{x_i}e^{x_j})\hat{i}\hat{j}
+\end{align*}
+Next, we show that the $\nabla^2f\succeq 0$. Take $v$ as any given vector, we have
+\begin{align*}
+v^T\cdot\nabla^2f\cdot v&=(\sum_iv_i\hat{i})\cdot\frac{1}{(\sum_i e^{x_i})^2}\sum_{i,j}(\delta_{i,j}e^{x_i}\sum_i e^{x_i}-e^{x_i}e^{x_j})\hat{i}\hat{j}\cdot(\sum_iv_i\hat{i})\\
+&=\frac{1}{(\sum_i e^{x_i})^2}[\sum_ie^{x_i}\sum_ie^{x_i}v_i^2-(\sum_ie^{x_i}v_i)^2]\geq 0,
+\end{align*}
+which is Cauchy-Shwarz inequality.\\
+2.\\
+True for $X\succ0$. We verify its concavity by considering the function $f(t)=log \det(X+tV)$ for any direction $V$. We only take consider a neighbourhood of $X$ where $X+tV\succ0$. We have
+\begin{align*}
+f(t) &= log \det(X+tV) = log[\det X^{1/2}\det (I+tX^{-1/2}VX^{-1/2})\det X^{1/2}]\\
+&=log\det X+log\det(I+tX^{-1/2}VX^{-1/2})=\sum_ilog(1+t\lambda_i) + log\det X,
+\end{align*}
+where $\lambda_i$ is the $i^{th}$ eigenvalue of $X^{-1/2}VX^{-1/2}$. Now it's easy to calculate
+$$f''(t)=-\sigma_i\frac{\lambda_i}{(1+t\lambda+i)^2}<0,$$
+which infers $f(t)$ is concave. Thus $log\det X$ is concave.\\
+3.\\
+We show the result by induction on $m$.\\
+(1)basis\\
+$m = 1$ is trivial.\\
+(2)inductive step\\
+if for case $m	\leq k$ the proposition holds, then for $m=k+1$:
+\begin{align*}
+f(\sum_{i=1}^{k+1}\alpha_ix_i)&=f(\alpha_1x_1+\sum_{i=2}^{k+1}\alpha_ix_i)\geq\alpha_1f(x_1)+(1-\alpha_1)f(\sum_{i=2}^{k+1}\frac{\alpha_i}{1-\alpha_1}x_i)\\
+& \geq \alpha_1f(x_1) + (1-\alpha_1)\sum_{i=2}^{k+1}\frac{\alpha_i}{1-\alpha_1}x_i=\sum_{i=1}^{k+1}\alpha_ix_i.
+\end{align*}
+(3)conclusion\\
+The result(Jensen inequality) holds for all natural numbers.
+% section 3
+\section{Solve simple optimization problems}
+1)\\
+It's easy to verify that $V_p$ is a convex set. Since $\nabla f = c$, the minimum could only be on the boundaries. From KKT conditions we know that $\nabla f +\mu\nabla g = 0$, where $\mu>0$. (The constraint should be considered for each quadrant. But we know that the minimizer is either in one quadrant or on an axis. Therefore we only need to take one quadrant in to equation and deal with the corners, which could be easily proven not the minimizer) Thus,
+\begin{gather*}
+\mu\nabla g = \mu\sum_i\mathrm{sgn}(x_i)p(\mathrm{sgn}(x_i)x_i)^{p-1}\hat{i}=-c,
+\end{gather*}
+where $\mathrm{sgn}$ is the sign function. Therefore we have 
+\begin{align*}
+\mathrm{sgn}(x_i) = -\mathrm{sgn}(c_i),\\
+x_i = -\mathrm{sgn}(c_i)(\frac{|c_i|}{\mu p})^\frac{1}{p-1},
+\end{align*}
+where $c_i$ is the $i^{th}$ component of $c$. Finally from $\sum_i|x_i|^p=1$ we could normalize $\mu$ as $\mu = (\sum_i(\frac{|c_i|}{p})^\frac{p}{p-1})^\frac{p-1}{p}$\\
+2)\\
+Added Lagrange multiplier, the target function becomes
+$$\mathcal{L}=d^Tx+\sum_ix_ilogx_i+\lambda(\sum_ix_i-1).$$
+Thus we have
+\begin{gather*}
+\frac{\partial\mathcal{L}}{\partial x_i}=d_i+\lambda+1+logx_i=0,\\
+\frac{\partial\mathcal{L}}{\partial \lambda}=\sum_ix_i-1=0.
+\end{gather*}
+Solving these equations, we could obtain the minimizer as $x_i = e^{-(d_i+\lambda+1)}$, where $\lambda = -log(\sum_ie^{-(d_i+1)})$.
+\end{document}
